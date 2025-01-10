@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -19,6 +20,8 @@ type keyMap struct {
 	Quit   key.Binding
 	Add    key.Binding
 	Delete key.Binding
+	Cancel key.Binding
+	Enter  key.Binding
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
@@ -57,6 +60,14 @@ var keys = keyMap{
 		key.WithKeys("x"),
 		key.WithHelp("x", "delete"),
 	),
+	Cancel: key.NewBinding(
+		key.WithKeys("esc"),
+		key.WithHelp("esc", "cancel"),
+	),
+	Enter: key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "enter"),
+	),
 }
 
 type project struct {
@@ -65,11 +76,12 @@ type project struct {
 }
 
 type model struct {
-	keys    keyMap
-	help    help.Model
-	state   string
-	table   table.Model
-	entries []project
+	keys      keyMap
+	help      help.Model
+	state     string
+	table     table.Model
+	entries   []project
+	projectTi textinput.Model
 }
 
 func (m model) getRowsFromEntries() []table.Row {
@@ -107,6 +119,11 @@ func InitalModel() model {
 		rows = append(rows, table.Row{strconv.Itoa(v.id), v.name})
 	}
 
+	ti := textinput.New()
+	ti.Placeholder = "ESC to cancel..."
+	ti.CharLimit = 50
+	ti.Width = 20
+
 	return model{
 		keys:  keys,
 		help:  help.New(),
@@ -117,7 +134,8 @@ func InitalModel() model {
 			table.WithFocused(true),
 			table.WithHeight(10),
 		),
-		entries: entries,
+		entries:   entries,
+		projectTi: ti,
 	}
 }
 

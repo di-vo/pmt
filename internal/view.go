@@ -14,6 +14,8 @@ func (m model) View() string {
 	switch m.state {
 	case "overview":
 		s = m.table.View()
+	case "addingProject":
+		s = m.projectTi.View() + "\n\n" + m.table.View()
 	}
 
 	helpView := m.help.View(m.keys)
