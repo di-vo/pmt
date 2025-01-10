@@ -1,6 +1,9 @@
 package internal
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/charmbracelet/bubbles/key"
 	_ "github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,14 +20,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.help.Width = msg.Width
 	case tea.KeyMsg:
-		switch {
-		case !lib.Contains(inputStates, m.state):
+		if !lib.Contains(inputStates, m.state) {
 			switch {
 			case key.Matches(msg, m.keys.Help):
 				m.help.ShowAll = !m.help.ShowAll
 			case key.Matches(msg, m.keys.Quit):
 				return m, tea.Quit
 			case key.Matches(msg, m.keys.Add):
+				// Fix: still works in detail state
 				m.state = "addingProject"
 				m.projectTi.Focus()
 				m.projectTi.SetValue("")
@@ -42,27 +45,42 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.table.SetCursor(c)
 				}
 			}
-		case key.Matches(msg, m.keys.Cancel):
+		}
+
+		if key.Matches(msg, m.keys.Cancel) {
 			m.state = "overview"
 			m.table.Focus()
-		case key.Matches(msg, m.keys.Enter):
+		}
+
+		if key.Matches(msg, m.keys.Enter) {
 			switch m.state {
 			case "addingProject":
+				// add project to slice and close textinput
 				m.state = "overview"
 				m.table.Focus()
 
-				m.entries = append(m.entries, project{id: 3, name: m.projectTi.Value()})
-				m.table.SetRows(m.getRowsFromEntries())
-				//m.table.SetCursor(len(m.entries))
-				m.table.GotoBottom()
+				if strings.Trim(m.projectTi.Value(), " ") != "" {
+					m.entries = append(m.entries, project{id: 3, name: m.projectTi.Value()})
+					m.table.SetRows(m.getRowsFromEntries())
+					m.table.GotoBottom()
+				}
+			case "overview":
+				// enter detailed view for selected item
+				fmt.Println("going into detail")
+				m.state = "detailed"
 			}
 		}
 	}
 
-	if lib.Contains(inputStates, m.state) {
+	switch {
+	case lib.Contains(inputStates, m.state):
 		m.projectTi, cmd = m.projectTi.Update(msg)
-	} else {
+	case m.state == "overview":
 		m.table, cmd = m.table.Update(msg)
+	case m.state == "detailed":
+		m.todoList, cmd = m.todoList.Update(msg)
+		m.doingList, cmd = m.doingList.Update(msg)
+		m.doneList, cmd = m.doneList.Update(msg)
 	}
 	return m, cmd
 }

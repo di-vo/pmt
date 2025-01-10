@@ -8,6 +8,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -70,9 +71,21 @@ var keys = keyMap{
 	),
 }
 
+type item struct {
+	title string
+	desc  string
+}
+
+func (i item) Title() string       { return i.title }
+func (i item) Description() string { return i.desc }
+func (i item) FilterValue() string { return i.title }
+
 type project struct {
-	id   int
-	name string
+	id         int
+	name       string
+	todoItems  []item
+	doingItems []item
+	doneItems  []item
 }
 
 type model struct {
@@ -82,6 +95,9 @@ type model struct {
 	table     table.Model
 	entries   []project
 	projectTi textinput.Model
+	todoList  list.Model
+	doingList list.Model
+	doneList  list.Model
 }
 
 func (m model) getRowsFromEntries() []table.Row {
@@ -124,6 +140,15 @@ func InitalModel() model {
 	ti.CharLimit = 50
 	ti.Width = 20
 
+	todoList := list.New([]list.Item{item{title: "last todo", desc: "almost over"}, item{title: "last test", desc: "almost over"}, item{title: "last todo", desc: "almost joever"}}, list.NewDefaultDelegate(), 30, 10)
+	todoList.Title = "ToDo"
+
+	doingList := list.New([]list.Item{item{title: "despairge", desc: "yep"}}, list.NewDefaultDelegate(), 30, 10)
+	doingList.Title = "Doing"
+
+	doneList := list.New([]list.Item{item{title: "first task", desc: "lets go"}}, list.NewDefaultDelegate(), 30, 10)
+	doneList.Title = "Done"
+
 	return model{
 		keys:  keys,
 		help:  help.New(),
@@ -136,6 +161,9 @@ func InitalModel() model {
 		),
 		entries:   entries,
 		projectTi: ti,
+		todoList:  todoList,
+		doingList: doingList,
+		doneList:  doneList,
 	}
 }
 

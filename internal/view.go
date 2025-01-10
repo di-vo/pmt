@@ -16,6 +16,8 @@ func (m model) View() string {
 		s = m.table.View()
 	case "addingProject":
 		s = m.projectTi.View() + "\n\n" + m.table.View()
+	case "detailed":
+		s = m.todoList.View() + "\n" + m.doingList.View() + "\n" + m.doneList.View()
 	}
 
 	helpView := m.help.View(m.keys)
