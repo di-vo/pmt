@@ -1,38 +1,28 @@
 package internal
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	_ "github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/di-vo/pmt/lib"
 )
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	inputStates := []string{
-		"addingProject",
-	}
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.help.Width = msg.Width
 	case tea.KeyMsg:
-		if !lib.Contains(inputStates, m.state) {
-			switch {
-			case key.Matches(msg, m.keys.Help):
-				m.help.ShowAll = !m.help.ShowAll
-			case key.Matches(msg, m.keys.Quit):
-				return m, tea.Quit
-			case key.Matches(msg, m.keys.Add):
-				// Fix: still works in detail state
+		switch m.state {
+		case "overview":
+			if key.Matches(msg, m.keys.Add) {
 				m.state = "addingProject"
 				m.projectTi.Focus()
 				m.projectTi.SetValue("")
 				return m, nil
-			case key.Matches(msg, m.keys.Delete):
+			} else if key.Matches(msg, m.keys.Delete) {
 				c := m.table.Cursor()
 
 				if len(m.entries) > 0 {
@@ -44,17 +34,29 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.table.SetRows(m.getRowsFromEntries())
 					m.table.SetCursor(c)
 				}
+			} else if key.Matches(msg, m.keys.Enter) {
+				// enter detailed view for selected item
+				m.state = "detailed"
+			} else if key.Matches(msg, m.keys.Help) {
+				m.help.ShowAll = !m.help.ShowAll
+			} else if key.Matches(msg, m.keys.Quit) {
+				return m, tea.Quit
 			}
-		}
+		case "detail":
+			if key.Matches(msg, m.keys.Add) {
 
-		if key.Matches(msg, m.keys.Cancel) {
-			m.state = "overview"
-			m.table.Focus()
-		}
+			} else if key.Matches(msg, m.keys.Delete) {
 
-		if key.Matches(msg, m.keys.Enter) {
-			switch m.state {
-			case "addingProject":
+			} else if key.Matches(msg, m.keys.Escape) {
+				m.state = "overview"
+				m.table.Focus()
+			} else if key.Matches(msg, m.keys.Help) {
+				m.help.ShowAll = !m.help.ShowAll
+			} else if key.Matches(msg, m.keys.Quit) {
+				return m, tea.Quit
+			}
+		case "addingProject":
+			if key.Matches(msg, m.keys.Enter) {
 				// add project to slice and close textinput
 				m.state = "overview"
 				m.table.Focus()
@@ -64,23 +66,33 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.table.SetRows(m.getRowsFromEntries())
 					m.table.GotoBottom()
 				}
-			case "overview":
-				// enter detailed view for selected item
-				fmt.Println("going into detail")
-				m.state = "detailed"
+			} else if key.Matches(msg, m.keys.Escape) {
+				m.state = "overview"
+				m.table.Focus()
 			}
+		case "addingItem":
+			if key.Matches(msg, m.keys.Enter) {
+
+			} else if key.Matches(msg, m.keys.Escape) {
+
+			}
+		case "removingProject":
+			// confirm, cancel
+		case "removingItem":
+			// confirm, cancel
 		}
 	}
 
+	// after input handling, update elements according to the current state
 	switch {
-	case lib.Contains(inputStates, m.state):
-		m.projectTi, cmd = m.projectTi.Update(msg)
 	case m.state == "overview":
 		m.table, cmd = m.table.Update(msg)
 	case m.state == "detailed":
 		m.todoList, cmd = m.todoList.Update(msg)
 		m.doingList, cmd = m.doingList.Update(msg)
 		m.doneList, cmd = m.doneList.Update(msg)
+	case m.state == "addingProject":
+		m.projectTi, cmd = m.projectTi.Update(msg)
 	}
 	return m, cmd
 }

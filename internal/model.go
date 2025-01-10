@@ -1,5 +1,5 @@
 // TODO:
-// - create SQLite DB and connect to it
+// - read up on list
 
 package internal
 
@@ -21,7 +21,7 @@ type keyMap struct {
 	Quit   key.Binding
 	Add    key.Binding
 	Delete key.Binding
-	Cancel key.Binding
+	Escape key.Binding
 	Enter  key.Binding
 }
 
@@ -61,7 +61,7 @@ var keys = keyMap{
 		key.WithKeys("x"),
 		key.WithHelp("x", "delete"),
 	),
-	Cancel: key.NewBinding(
+	Escape: key.NewBinding(
 		key.WithKeys("esc"),
 		key.WithHelp("esc", "cancel"),
 	),
