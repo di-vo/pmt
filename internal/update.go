@@ -1,11 +1,13 @@
 package internal
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	_ "github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/di-vo/pmt/lib"
 )
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -52,8 +54,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.table.Focus()
 			} else if key.Matches(msg, m.keys.Help) {
 				m.help.ShowAll = !m.help.ShowAll
+				lib.WriteToLog("pressed esc")
 			} else if key.Matches(msg, m.keys.Quit) {
 				return m, tea.Quit
+			} else if key.Matches(msg, m.keys.Tab) {
+				lib.WriteToLog("pressed tab")
 			}
 		case "addingProject":
 			if key.Matches(msg, m.keys.Enter) {
@@ -88,9 +93,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case m.state == "overview":
 		m.table, cmd = m.table.Update(msg)
 	case m.state == "detailed":
-		m.todoList, cmd = m.todoList.Update(msg)
-		m.doingList, cmd = m.doingList.Update(msg)
-		m.doneList, cmd = m.doneList.Update(msg)
+		lib.WriteToLog("focusindex in update: " + strconv.Itoa(m.focusIndex))
+		m.detailLists[m.focusIndex], cmd = m.detailLists[m.focusIndex].Update(msg)
 	case m.state == "addingProject":
 		m.projectTi, cmd = m.projectTi.Update(msg)
 	}

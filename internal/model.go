@@ -23,6 +23,7 @@ type keyMap struct {
 	Delete key.Binding
 	Escape key.Binding
 	Enter  key.Binding
+	Tab    key.Binding
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
@@ -69,6 +70,10 @@ var keys = keyMap{
 		key.WithKeys("enter"),
 		key.WithHelp("enter", "enter"),
 	),
+	Tab: key.NewBinding(
+		key.WithKeys("tab", "o", "h"),
+		key.WithHelp("tab", "cycle lists"),
+	),
 }
 
 type item struct {
@@ -89,15 +94,14 @@ type project struct {
 }
 
 type model struct {
-	keys      keyMap
-	help      help.Model
-	state     string
-	table     table.Model
-	entries   []project
-	projectTi textinput.Model
-	todoList  list.Model
-	doingList list.Model
-	doneList  list.Model
+	keys        keyMap
+	help        help.Model
+	state       string
+	table       table.Model
+	entries     []project
+	projectTi   textinput.Model
+	detailLists []list.Model
+	focusIndex  int
 }
 
 func (m model) getRowsFromEntries() []table.Row {
@@ -140,14 +144,33 @@ func InitalModel() model {
 	ti.CharLimit = 50
 	ti.Width = 20
 
-	todoList := list.New([]list.Item{item{title: "last todo", desc: "almost over"}, item{title: "last test", desc: "almost over"}, item{title: "last todo", desc: "almost joever"}}, list.NewDefaultDelegate(), 30, 10)
+	todoList := list.New([]list.Item{
+		item{title: "last todo", desc: "almost over"},
+		item{title: "last test", desc: "almost over"},
+		item{title: "last todo", desc: "almost joever"}},
+		list.NewDefaultDelegate(), 50, 25)
 	todoList.Title = "ToDo"
 
-	doingList := list.New([]list.Item{item{title: "despairge", desc: "yep"}}, list.NewDefaultDelegate(), 30, 10)
+	doingList := list.New([]list.Item{
+		item{title: "last todo", desc: "almost over"},
+		item{title: "last test", desc: "almost over"},
+		item{title: "last todo", desc: "almost joever"}},
+		list.NewDefaultDelegate(), 50, 25)
 	doingList.Title = "Doing"
 
-	doneList := list.New([]list.Item{item{title: "first task", desc: "lets go"}}, list.NewDefaultDelegate(), 30, 10)
+	doneList := list.New([]list.Item{
+		item{title: "last todo", desc: "almost over"},
+		item{title: "last test", desc: "almost over"},
+		item{title: "last todo", desc: "almost joever"}},
+		list.NewDefaultDelegate(), 50, 25)
 	doneList.Title = "Done"
+
+	lists := []list.Model{todoList, doingList, doneList}
+
+	for i := range lists {
+		lists[i].SetShowHelp(false)
+		lists[i].Styles.Title = listTitleStyle
+	}
 
 	return model{
 		keys:  keys,
@@ -159,11 +182,10 @@ func InitalModel() model {
 			table.WithFocused(true),
 			table.WithHeight(10),
 		),
-		entries:   entries,
-		projectTi: ti,
-		todoList:  todoList,
-		doingList: doingList,
-		doneList:  doneList,
+		entries:     entries,
+		projectTi:   ti,
+		detailLists: lists,
+		focusIndex:  1,
 	}
 }
 
