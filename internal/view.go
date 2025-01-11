@@ -45,6 +45,10 @@ var (
 	itemTitleStyle = lip.NewStyle().
 			Bold(true).
 			Underline(true)
+
+	deleteHintStyle = lip.NewStyle().
+			Foreground(lip.Color("#FF0000")).
+			Bold(true)
 )
 
 func renderElement(text string, width int) string {
@@ -136,6 +140,12 @@ func (m model) View() string {
 			renderList(sp.itemLists[2], "Done", listWidth, &sp.itemLists[2] == sp.activeItems)}
 
 		s = lip.JoinHorizontal(lip.Top, lists...)
+	case "removingProject":
+		s = lip.JoinVertical(lip.Center,
+			deleteHintStyle.Render("Permanently delete this Project: ")+m.entries[m.table.Cursor()].name,
+			"(y)es / (c)ancel",
+			" ",
+			m.table.View())
 	}
 
 	helpView := m.help.View(m.keys)

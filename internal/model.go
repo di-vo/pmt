@@ -15,15 +15,17 @@ import (
 )
 
 type keyMap struct {
-	Up     key.Binding
-	Down   key.Binding
-	Help   key.Binding
-	Quit   key.Binding
-	Add    key.Binding
-	Delete key.Binding
-	Escape key.Binding
-	Enter  key.Binding
-	Tab    key.Binding
+	Up      key.Binding
+	Down    key.Binding
+	Help    key.Binding
+	Quit    key.Binding
+	Add     key.Binding
+	Delete  key.Binding
+	Escape  key.Binding
+	Enter   key.Binding
+	Tab     key.Binding
+	Confirm key.Binding
+	Cancel  key.Binding
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
@@ -73,6 +75,14 @@ var keys = keyMap{
 	Tab: key.NewBinding(
 		key.WithKeys("tab"),
 		key.WithHelp("tab", "cycle lists"),
+	),
+	Confirm: key.NewBinding(
+		key.WithKeys("y"),
+		key.WithHelp("y", "confirm"),
+	),
+	Cancel: key.NewBinding(
+		key.WithKeys("c"),
+		key.WithHelp("c", "cancel"),
 	),
 }
 

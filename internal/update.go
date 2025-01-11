@@ -23,17 +23,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.projectTi.SetValue("")
 				return m, nil
 			} else if key.Matches(msg, m.keys.Delete) {
-				c := m.table.Cursor()
+				m.state = "removingProject"
 
-				if len(m.entries) > 0 {
-					newEntries := make([]project, 0)
-					newEntries = append(newEntries, m.entries[:c]...)
-					newEntries = append(newEntries, m.entries[c+1:]...)
-					m.entries = newEntries
-
-					m.table.SetRows(m.getRowsFromEntries())
-					m.table.SetCursor(c)
-				}
 			} else if key.Matches(msg, m.keys.Enter) {
 				// enter detailed view for selected item
 				m.state = "detailed"
@@ -104,7 +95,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			}
 		case "removingProject":
-			// confirm, cancel
+			if key.Matches(msg, m.keys.Confirm) {
+				c := m.table.Cursor()
+
+				if len(m.entries) > 0 {
+					newEntries := make([]project, 0)
+					newEntries = append(newEntries, m.entries[:c]...)
+					newEntries = append(newEntries, m.entries[c+1:]...)
+					m.entries = newEntries
+
+					m.table.SetRows(m.getRowsFromEntries())
+					m.table.SetCursor(c)
+				}
+
+				m.state = "overview"
+			} else if key.Matches(msg, m.keys.Cancel) {
+				m.state = "overview"
+			}
 		case "removingItem":
 			// confirm, cancel
 		}
