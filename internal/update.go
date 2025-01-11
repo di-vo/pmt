@@ -1,13 +1,11 @@
 package internal
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	_ "github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/di-vo/pmt/lib"
 )
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -45,7 +43,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 		case "detailed":
-			if key.Matches(msg, m.keys.Add) {
+			if key.Matches(msg, m.keys.Up) {
+				(*m.entries[m.table.Cursor()].activeItems)[m.itemIndex].isActive = false
+
+				m.itemIndex--
+
+				if m.itemIndex < 0 {
+					m.itemIndex = len(*m.entries[m.table.Cursor()].activeItems) - 1
+				}
+			} else if key.Matches(msg, m.keys.Down) {
+				(*m.entries[m.table.Cursor()].activeItems)[m.itemIndex].isActive = false
+
+				m.itemIndex++
+
+				if m.itemIndex == len(*m.entries[m.table.Cursor()].activeItems) {
+					m.itemIndex = 0
+				}
+			} else if key.Matches(msg, m.keys.Add) {
 
 			} else if key.Matches(msg, m.keys.Delete) {
 
@@ -54,11 +68,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.table.Focus()
 			} else if key.Matches(msg, m.keys.Help) {
 				m.help.ShowAll = !m.help.ShowAll
-				lib.WriteToLog("pressed esc")
 			} else if key.Matches(msg, m.keys.Quit) {
 				return m, tea.Quit
 			} else if key.Matches(msg, m.keys.Tab) {
-				lib.WriteToLog("pressed tab")
+				(*m.entries[m.table.Cursor()].activeItems)[m.itemIndex].isActive = false
+
+				m.listIndex++
+
+				if m.listIndex == len(m.entries[0].itemLists) {
+					m.listIndex = 0
+				}
+
+				m.itemIndex = 0
+
 			}
 		case "addingProject":
 			if key.Matches(msg, m.keys.Enter) {
@@ -93,8 +115,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case m.state == "overview":
 		m.table, cmd = m.table.Update(msg)
 	case m.state == "detailed":
-		lib.WriteToLog("focusindex in update: " + strconv.Itoa(m.focusIndex))
-		//m.detailLists[m.focusIndex], cmd = m.detailLists[m.focusIndex].Update(msg)
+		m.entries[m.table.Cursor()].activeItems = &m.entries[m.table.Cursor()].itemLists[m.listIndex]
+		(*m.entries[m.table.Cursor()].activeItems)[m.itemIndex].isActive = true
 	case m.state == "addingProject":
 		m.projectTi, cmd = m.projectTi.Update(msg)
 	}

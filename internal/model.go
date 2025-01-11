@@ -71,35 +71,36 @@ var keys = keyMap{
 		key.WithHelp("enter", "enter"),
 	),
 	Tab: key.NewBinding(
-		key.WithKeys("tab", "o", "h"),
+		key.WithKeys("tab"),
 		key.WithHelp("tab", "cycle lists"),
 	),
 }
 
 type item struct {
-	title string
-	desc  string
+	title    string
+	desc     string
+	isActive bool
 }
 
 func (i item) Title() string       { return i.title }
 func (i item) Description() string { return i.desc }
 
 type project struct {
-	id         int
-	name       string
-	todoItems  []item
-	doingItems []item
-	doneItems  []item
+	id          int
+	name        string
+	itemLists   [][]item
+	activeItems *[]item
 }
 
 type model struct {
-	keys       keyMap
-	help       help.Model
-	state      string
-	table      table.Model
-	entries    []project
-	projectTi  textinput.Model
-	focusIndex int
+	keys      keyMap
+	help      help.Model
+	state     string
+	table     table.Model
+	entries   []project
+	projectTi textinput.Model
+	listIndex int
+	itemIndex int
 }
 
 func (m model) getRowsFromEntries() []table.Row {
@@ -119,23 +120,24 @@ func InitalModel() model {
 	}
 
 	entries := []project{
-		{id: 1, name: "Arch Setup",
-			todoItems: []item{
-				item{title: "last todo", desc: "almost over"},
-				item{title: "last test", desc: "almost over"},
-				item{title: "last todo", desc: "almost joever"},
-				item{title: "last todo", desc: "this is going to be a very long description"},
+		{id: 1, name: "Arch Setup", itemLists: [][]item{
+			{
+				{title: "last todo", desc: "almost over"},
+				{title: "last test", desc: "almost over"},
+				{title: "last todo", desc: "almost joever"},
+				{title: "last todo", desc: "this is going to be a very long description"},
 			},
-			doingItems: []item{
-				item{title: "last todo", desc: "almost over"},
-				item{title: "last test", desc: "almost over"},
-				item{title: "last todo", desc: "almost joever"},
+			{
+				{title: "last todo", desc: "almost over"},
+				{title: "last test", desc: "almost over"},
+				{title: "last todo", desc: "almost joever"},
 			},
-			doneItems: []item{
-				item{title: "last todo", desc: "almost over"},
-				item{title: "last test", desc: "almost over"},
-				item{title: "last todo", desc: "almost joever"},
+			{
+				{title: "last todo", desc: "almost over"},
+				{title: "last test", desc: "almost over"},
+				{title: "last todo", desc: "almost joever"},
 			}},
+		},
 		{id: 2, name: "Project App"},
 		{id: 3, name: "Project App"},
 		{id: 4, name: "Project App"},
@@ -168,9 +170,10 @@ func InitalModel() model {
 			table.WithFocused(true),
 			table.WithHeight(10),
 		),
-		entries:    entries,
-		projectTi:  ti,
-		focusIndex: 1,
+		entries:   entries,
+		projectTi: ti,
+		listIndex: 0,
+		itemIndex: 0,
 	}
 }
 

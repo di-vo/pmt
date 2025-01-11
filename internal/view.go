@@ -15,13 +15,30 @@ var (
 			Padding(1, 2, 0).
 			Margin(0, 1)
 
+	activeListStyle = lip.NewStyle().
+			Border(lip.RoundedBorder()).
+			BorderForeground(lip.Color("#458588")).
+			Padding(1, 2, 0).
+			Margin(0, 1)
+
 	listTitleStyle = lip.NewStyle().
 			Foreground(lip.Color("#FFFDF5")).
 			Background(lip.Color("#25A065")).
 			Padding(0, 2)
 
+	activeListTitleStyle = lip.NewStyle().
+				Foreground(lip.Color("#FFFDF5")).
+				Background(lip.Color("#458588")).
+				Padding(0, 2)
+
 	itemStyle = lip.NewStyle().
 			BorderStyle(lip.RoundedBorder()).
+			MarginBottom(1).
+			Padding(0, 1, 1)
+
+	activeItemStyle = lip.NewStyle().
+			BorderStyle(lip.RoundedBorder()).
+			BorderForeground(lip.Color("#F186C7")).
 			MarginBottom(1).
 			Padding(0, 1, 1)
 
@@ -73,17 +90,31 @@ func renderElement(text string, width int) string {
 	return s
 }
 
-func renderList(items []item, title string, width int) string {
-	s := listTitleStyle.Render(title) + "\n\n"
+func renderList(items []item, title string, width int, isActive bool) string {
+	s := ""
+
+	if isActive {
+		s = activeListTitleStyle.Render(title) + "\n\n"
+	} else {
+		s = listTitleStyle.Render(title) + "\n\n"
+	}
 
 	for _, v := range items {
 		itemString := itemTitleStyle.Render(renderElement(v.title, width)) + "\n"
 		itemString += renderElement(v.desc, width)
 
-		s += itemStyle.Render(itemString) + "\n"
+		if v.isActive {
+			s += activeItemStyle.Render(itemString) + "\n"
+		} else {
+			s += itemStyle.Render(itemString) + "\n"
+		}
 	}
 
-	return listStyle.Render(s)
+	if isActive {
+		return activeListStyle.Render(s)
+	} else {
+		return listStyle.Render(s)
+	}
 }
 
 // The main rendering function
@@ -96,13 +127,13 @@ func (m model) View() string {
 	case "addingProject":
 		s = m.projectTi.View() + "\n\n" + m.table.View()
 	case "detailed":
-		sp := m.entries[m.table.Cursor()]
+		sp := &m.entries[m.table.Cursor()]
 
 		listWidth := 20
 		lists := []string{
-			renderList(sp.todoItems, "ToDo", listWidth),
-			renderList(sp.doingItems, "Doing", listWidth),
-			renderList(sp.doneItems, "Done", listWidth)}
+			renderList(sp.itemLists[0], "ToDo", listWidth, &sp.itemLists[0] == sp.activeItems),
+			renderList(sp.itemLists[1], "Doing", listWidth, &sp.itemLists[1] == sp.activeItems),
+			renderList(sp.itemLists[2], "Done", listWidth, &sp.itemLists[2] == sp.activeItems)}
 
 		s = lip.JoinHorizontal(lip.Top, lists...)
 	}
