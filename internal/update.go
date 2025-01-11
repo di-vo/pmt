@@ -44,7 +44,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else if key.Matches(msg, m.keys.Quit) {
 				return m, tea.Quit
 			}
-		case "detail":
+		case "detailed":
 			if key.Matches(msg, m.keys.Add) {
 
 			} else if key.Matches(msg, m.keys.Delete) {
@@ -94,7 +94,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.table, cmd = m.table.Update(msg)
 	case m.state == "detailed":
 		lib.WriteToLog("focusindex in update: " + strconv.Itoa(m.focusIndex))
-		m.detailLists[m.focusIndex], cmd = m.detailLists[m.focusIndex].Update(msg)
+		//m.detailLists[m.focusIndex], cmd = m.detailLists[m.focusIndex].Update(msg)
 	case m.state == "addingProject":
 		m.projectTi, cmd = m.projectTi.Update(msg)
 	}

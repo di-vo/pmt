@@ -1,5 +1,6 @@
 // TODO:
 // - read up on list
+// - add delegate functions to lists (go back to overview, toggle outer help)
 
 package internal
 
@@ -8,7 +9,6 @@ import (
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -83,7 +83,6 @@ type item struct {
 
 func (i item) Title() string       { return i.title }
 func (i item) Description() string { return i.desc }
-func (i item) FilterValue() string { return i.title }
 
 type project struct {
 	id         int
@@ -94,14 +93,13 @@ type project struct {
 }
 
 type model struct {
-	keys        keyMap
-	help        help.Model
-	state       string
-	table       table.Model
-	entries     []project
-	projectTi   textinput.Model
-	detailLists []list.Model
-	focusIndex  int
+	keys       keyMap
+	help       help.Model
+	state      string
+	table      table.Model
+	entries    []project
+	projectTi  textinput.Model
+	focusIndex int
 }
 
 func (m model) getRowsFromEntries() []table.Row {
@@ -121,7 +119,23 @@ func InitalModel() model {
 	}
 
 	entries := []project{
-		{id: 1, name: "Arch Setup"},
+		{id: 1, name: "Arch Setup",
+			todoItems: []item{
+				item{title: "last todo", desc: "almost over"},
+				item{title: "last test", desc: "almost over"},
+				item{title: "last todo", desc: "almost joever"},
+				item{title: "last todo", desc: "this is going to be a very long description"},
+			},
+			doingItems: []item{
+				item{title: "last todo", desc: "almost over"},
+				item{title: "last test", desc: "almost over"},
+				item{title: "last todo", desc: "almost joever"},
+			},
+			doneItems: []item{
+				item{title: "last todo", desc: "almost over"},
+				item{title: "last test", desc: "almost over"},
+				item{title: "last todo", desc: "almost joever"},
+			}},
 		{id: 2, name: "Project App"},
 		{id: 3, name: "Project App"},
 		{id: 4, name: "Project App"},
@@ -144,34 +158,6 @@ func InitalModel() model {
 	ti.CharLimit = 50
 	ti.Width = 20
 
-	todoList := list.New([]list.Item{
-		item{title: "last todo", desc: "almost over"},
-		item{title: "last test", desc: "almost over"},
-		item{title: "last todo", desc: "almost joever"}},
-		list.NewDefaultDelegate(), 50, 25)
-	todoList.Title = "ToDo"
-
-	doingList := list.New([]list.Item{
-		item{title: "last todo", desc: "almost over"},
-		item{title: "last test", desc: "almost over"},
-		item{title: "last todo", desc: "almost joever"}},
-		list.NewDefaultDelegate(), 50, 25)
-	doingList.Title = "Doing"
-
-	doneList := list.New([]list.Item{
-		item{title: "last todo", desc: "almost over"},
-		item{title: "last test", desc: "almost over"},
-		item{title: "last todo", desc: "almost joever"}},
-		list.NewDefaultDelegate(), 50, 25)
-	doneList.Title = "Done"
-
-	lists := []list.Model{todoList, doingList, doneList}
-
-	for i := range lists {
-		lists[i].SetShowHelp(false)
-		lists[i].Styles.Title = listTitleStyle
-	}
-
 	return model{
 		keys:  keys,
 		help:  help.New(),
@@ -182,13 +168,13 @@ func InitalModel() model {
 			table.WithFocused(true),
 			table.WithHeight(10),
 		),
-		entries:     entries,
-		projectTi:   ti,
-		detailLists: lists,
-		focusIndex:  1,
+		entries:    entries,
+		projectTi:  ti,
+		focusIndex: 1,
 	}
 }
 
 func (m model) Init() tea.Cmd {
+
 	return nil
 }
