@@ -10,7 +10,6 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/di-vo/pmt/internal/db"
 )
 
 type keyMap struct {
@@ -121,6 +120,7 @@ var keys = keyMap{
 }
 
 type item struct {
+	id       int
 	title    string
 	desc     string
 	isActive bool
@@ -170,12 +170,16 @@ func (m model) toggleActiveItemState(isActive bool) {
 }
 
 func InitalModel(database *sql.DB) model {
+	createTables(database)
+
 	columns := []table.Column{
 		{Title: "ID", Width: 4},
 		{Title: "Name", Width: 30},
 	}
 
-	entries := []project{
+	entries := getProjects(database)
+
+	/*entries := []project{
 		{id: 1, name: "Arch Setup", itemLists: [][]item{
 			{
 				{title: "last todo", desc: "almost over"},
@@ -203,7 +207,7 @@ func InitalModel(database *sql.DB) model {
 		{id: 8, name: "Project App"},
 		{id: 9, name: "Project App"},
 		{id: 10, name: "Project App"},
-	}
+	}*/
 
 	var rows []table.Row
 
@@ -218,8 +222,6 @@ func InitalModel(database *sql.DB) model {
 
 	ta := textarea.New()
 	ta.Placeholder = "Add Description..."
-
-	db.CreateTables(database)
 
 	return model{
 		keys:  keys,

@@ -31,7 +31,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state = "removingProject"
 			} else if key.Matches(msg, m.keys.Enter) {
 				// enter detailed view for selected item
-				m.state = "detailed"
+				if len(m.entries) > 0 {
+					m.state = "detailed"
+				}
 			} else if key.Matches(msg, m.keys.Help) {
 				m.help.ShowAll = !m.help.ShowAll
 			} else if key.Matches(msg, m.keys.Quit) {
@@ -152,7 +154,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.table.Focus()
 
 				if strings.Trim(m.textInput.Value(), " ") != "" {
-					m.entries = append(m.entries, project{id: 3, name: m.textInput.Value()})
+					var p project
+					p.name = m.textInput.Value()
+					p.itemLists = make([][]item, 3)
+					m.entries = append(m.entries, p)
 					m.table.SetRows(m.getRowsFromEntries())
 					m.table.GotoBottom()
 				}
