@@ -141,12 +141,12 @@ func (m model) View() string {
 	case "overview":
 		s = m.table.View()
 	case "addingProject", "editingProject":
-		s = m.addTi.View() + "\n\n" + m.table.View()
+		s = m.textInput.View() + "\n\n" + m.table.View()
 	case "detailed":
 		s = renderDetailed(m)
-	case "addingItem":
+	case "addingItem", "editingItem":
 		s = "Tab to switch | Enter when title is focused to confirm\n"
-		s += m.addTi.View() + "\n\n" + m.addTa.View() + "\n\n" + renderDetailed(m)
+		s += m.textInput.View() + "\n\n" + m.textArea.View() + "\n\n" + renderDetailed(m)
 	case "removingProject":
 		s = lip.JoinVertical(lip.Center,
 			deleteHintStyle.Render("Permanently delete this Project: ")+m.entries[m.table.Cursor()].name,

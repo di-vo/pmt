@@ -140,8 +140,8 @@ type model struct {
 	state     string
 	table     table.Model
 	entries   []project
-	addTi     textinput.Model
-	addTa     textarea.Model
+	textInput textinput.Model
+	textArea  textarea.Model
 	listIndex int
 	itemIndex int
 }
@@ -158,6 +158,12 @@ func (m model) getRowsFromEntries() []table.Row {
 
 func (m model) getActiveItem() item {
 	return (*m.entries[m.table.Cursor()].activeItems)[m.itemIndex]
+}
+
+func (m model) toggleActiveItemState(isActive bool) {
+	if len(*m.entries[m.table.Cursor()].activeItems) > 0 {
+		(*m.entries[m.table.Cursor()].activeItems)[m.itemIndex].isActive = isActive
+	}
 }
 
 func InitalModel() model {
@@ -185,7 +191,7 @@ func InitalModel() model {
 				{title: "last todo", desc: "almost joever"},
 			}},
 		},
-		{id: 2, name: "Project App"},
+		{id: 2, name: "Project App", itemLists: [][]item{{}, {}, {}}},
 		{id: 3, name: "Project App"},
 		{id: 4, name: "Project App"},
 		{id: 5, name: "Project App"},
@@ -221,8 +227,8 @@ func InitalModel() model {
 			table.WithHeight(10),
 		),
 		entries:   entries,
-		addTi:     ti,
-		addTa:     ta,
+		textInput: ti,
+		textArea:  ta,
 		listIndex: 0,
 		itemIndex: 0,
 	}
