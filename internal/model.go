@@ -1,7 +1,3 @@
-// TODO:
-// - read up on list
-// - add delegate functions to lists (go back to overview, toggle outer help)
-
 package internal
 
 import (
@@ -10,6 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
+	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -23,9 +20,11 @@ type keyMap struct {
 	Delete  key.Binding
 	Escape  key.Binding
 	Enter   key.Binding
-	Tab     key.Binding
+	Right   key.Binding
+	Left    key.Binding
 	Confirm key.Binding
 	Cancel  key.Binding
+	Tab     key.Binding
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
@@ -72,9 +71,13 @@ var keys = keyMap{
 		key.WithKeys("enter"),
 		key.WithHelp("enter", "enter"),
 	),
-	Tab: key.NewBinding(
-		key.WithKeys("tab"),
-		key.WithHelp("tab", "cycle lists"),
+	Right: key.NewBinding(
+		key.WithKeys("right", "l"),
+		key.WithHelp("l", "move right"),
+	),
+	Left: key.NewBinding(
+		key.WithKeys("left", "h"),
+		key.WithHelp("h", "move left"),
 	),
 	Confirm: key.NewBinding(
 		key.WithKeys("y"),
@@ -83,6 +86,10 @@ var keys = keyMap{
 	Cancel: key.NewBinding(
 		key.WithKeys("c"),
 		key.WithHelp("c", "cancel"),
+	),
+	Tab: key.NewBinding(
+		key.WithKeys("tab"),
+		key.WithHelp("tab", "tab"),
 	),
 }
 
@@ -108,7 +115,8 @@ type model struct {
 	state     string
 	table     table.Model
 	entries   []project
-	projectTi textinput.Model
+	addTi     textinput.Model
+	addTa     textarea.Model
 	listIndex int
 	itemIndex int
 }
@@ -170,6 +178,9 @@ func InitalModel() model {
 	ti.CharLimit = 50
 	ti.Width = 20
 
+	ta := textarea.New()
+	ta.Placeholder = "Add Description..."
+
 	return model{
 		keys:  keys,
 		help:  help.New(),
@@ -181,7 +192,8 @@ func InitalModel() model {
 			table.WithHeight(10),
 		),
 		entries:   entries,
-		projectTi: ti,
+		addTi:     ti,
+		addTa:     ta,
 		listIndex: 0,
 		itemIndex: 0,
 	}

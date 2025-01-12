@@ -19,8 +19,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "overview":
 			if key.Matches(msg, m.keys.Add) {
 				m.state = "addingProject"
-				m.projectTi.Focus()
-				m.projectTi.SetValue("")
+				m.addTi.Focus()
+				m.addTi.SetValue("")
 				return m, nil
 			} else if key.Matches(msg, m.keys.Delete) {
 				m.state = "removingProject"
@@ -51,9 +51,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.itemIndex = 0
 				}
 			} else if key.Matches(msg, m.keys.Add) {
-
+				m.state = "addingItem"
+				m.addTi.Focus()
+				m.addTi.SetValue("")
+				m.addTa.SetValue("")
+				return m, nil
 			} else if key.Matches(msg, m.keys.Delete) {
-
+				m.state = "removingItem"
 			} else if key.Matches(msg, m.keys.Escape) {
 				m.state = "overview"
 				m.table.Focus()
@@ -61,7 +65,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.help.ShowAll = !m.help.ShowAll
 			} else if key.Matches(msg, m.keys.Quit) {
 				return m, tea.Quit
-			} else if key.Matches(msg, m.keys.Tab) {
+			} else if key.Matches(msg, m.keys.Right) {
 				(*m.entries[m.table.Cursor()].activeItems)[m.itemIndex].isActive = false
 
 				m.listIndex++
@@ -71,7 +75,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 				m.itemIndex = 0
+			} else if key.Matches(msg, m.keys.Left) {
+				(*m.entries[m.table.Cursor()].activeItems)[m.itemIndex].isActive = false
 
+				m.listIndex--
+
+				if m.listIndex < 0 {
+					m.listIndex = len(m.entries[0].itemLists) - 1
+				}
+
+				m.itemIndex = 0
 			}
 		case "addingProject":
 			if key.Matches(msg, m.keys.Enter) {
@@ -79,8 +92,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state = "overview"
 				m.table.Focus()
 
-				if strings.Trim(m.projectTi.Value(), " ") != "" {
-					m.entries = append(m.entries, project{id: 3, name: m.projectTi.Value()})
+				if strings.Trim(m.addTi.Value(), " ") != "" {
+					m.entries = append(m.entries, project{id: 3, name: m.addTi.Value()})
 					m.table.SetRows(m.getRowsFromEntries())
 					m.table.GotoBottom()
 				}
@@ -89,10 +102,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.table.Focus()
 			}
 		case "addingItem":
-			if key.Matches(msg, m.keys.Enter) {
+			if key.Matches(msg, m.keys.Enter) && m.addTi.Focused() {
+				newItem := item{title: m.addTi.Value(), desc: m.addTa.Value()}
+				*m.entries[m.table.Cursor()].activeItems = append(*m.entries[m.table.Cursor()].activeItems, newItem)
 
+				m.state = "detailed"
 			} else if key.Matches(msg, m.keys.Escape) {
-
+				m.state = "detailed"
+			} else if key.Matches(msg, m.keys.Tab) {
+				if m.addTi.Focused() {
+					m.addTi.Blur()
+					m.addTa.Focus()
+				} else {
+					m.addTa.Blur()
+					m.addTi.Focus()
+				}
 			}
 		case "removingProject":
 			if key.Matches(msg, m.keys.Confirm) {
@@ -113,7 +137,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state = "overview"
 			}
 		case "removingItem":
-			// confirm, cancel
+			if key.Matches(msg, m.keys.Confirm) {
+				c := m.table.Cursor()
+
+				if len(*m.entries[c].activeItems) > 0 {
+					newItems := make([]item, 0)
+					newItems = append(newItems, (*m.entries[c].activeItems)[:m.itemIndex]...)
+					newItems = append(newItems, (*m.entries[c].activeItems)[m.itemIndex+1:]...)
+					*m.entries[c].activeItems = newItems
+
+					m.itemIndex--
+				}
+
+				m.state = "detailed"
+			} else if key.Matches(msg, m.keys.Cancel) {
+				m.state = "detailed"
+			}
 		}
 	}
 
@@ -125,7 +164,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.entries[m.table.Cursor()].activeItems = &m.entries[m.table.Cursor()].itemLists[m.listIndex]
 		(*m.entries[m.table.Cursor()].activeItems)[m.itemIndex].isActive = true
 	case m.state == "addingProject":
-		m.projectTi, cmd = m.projectTi.Update(msg)
+		m.addTi, cmd = m.addTi.Update(msg)
+	case m.state == "addingItem":
+		m.addTi, cmd = m.addTi.Update(msg)
+		m.addTa, cmd = m.addTa.Update(msg)
 	}
 	return m, cmd
 }

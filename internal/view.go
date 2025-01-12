@@ -121,6 +121,18 @@ func renderList(items []item, title string, width int, isActive bool) string {
 	}
 }
 
+func renderDetailed(m model) string {
+	sp := &m.entries[m.table.Cursor()]
+
+	listWidth := 20
+	lists := []string{
+		renderList(sp.itemLists[0], "ToDo", listWidth, &sp.itemLists[0] == sp.activeItems),
+		renderList(sp.itemLists[1], "Doing", listWidth, &sp.itemLists[1] == sp.activeItems),
+		renderList(sp.itemLists[2], "Done", listWidth, &sp.itemLists[2] == sp.activeItems)}
+
+	return lip.JoinHorizontal(lip.Top, lists...)
+}
+
 // The main rendering function
 func (m model) View() string {
 	s := ""
@@ -129,23 +141,24 @@ func (m model) View() string {
 	case "overview":
 		s = m.table.View()
 	case "addingProject":
-		s = m.projectTi.View() + "\n\n" + m.table.View()
+		s = m.addTi.View() + "\n\n" + m.table.View()
 	case "detailed":
-		sp := &m.entries[m.table.Cursor()]
-
-		listWidth := 20
-		lists := []string{
-			renderList(sp.itemLists[0], "ToDo", listWidth, &sp.itemLists[0] == sp.activeItems),
-			renderList(sp.itemLists[1], "Doing", listWidth, &sp.itemLists[1] == sp.activeItems),
-			renderList(sp.itemLists[2], "Done", listWidth, &sp.itemLists[2] == sp.activeItems)}
-
-		s = lip.JoinHorizontal(lip.Top, lists...)
+		s = renderDetailed(m)
+	case "addingItem":
+		s = "Tab to switch | Enter when title is focused to confirm\n"
+		s += m.addTi.View() + "\n\n" + m.addTa.View() + "\n\n" + renderDetailed(m)
 	case "removingProject":
 		s = lip.JoinVertical(lip.Center,
 			deleteHintStyle.Render("Permanently delete this Project: ")+m.entries[m.table.Cursor()].name,
 			"(y)es / (c)ancel",
 			" ",
 			m.table.View())
+	case "removingItem":
+		s = lip.JoinVertical(lip.Center,
+			deleteHintStyle.Render("Delete ")+(*m.entries[m.table.Cursor()].activeItems)[m.itemIndex].title,
+			"(y)es / (c)ancel",
+			" ",
+			renderDetailed(m))
 	}
 
 	helpView := m.help.View(m.keys)
