@@ -22,9 +22,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.addTi.Focus()
 				m.addTi.SetValue("")
 				return m, nil
+			} else if key.Matches(msg, m.keys.Edit) {
+				m.state = "editingProject"
+				m.addTi.Focus()
+				m.addTi.SetValue(m.entries[m.table.Cursor()].name)
+				return m, nil
 			} else if key.Matches(msg, m.keys.Delete) {
 				m.state = "removingProject"
-
 			} else if key.Matches(msg, m.keys.Enter) {
 				// enter detailed view for selected item
 				m.state = "detailed"
@@ -56,6 +60,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.addTi.SetValue("")
 				m.addTa.SetValue("")
 				return m, nil
+			} else if key.Matches(msg, m.keys.Edit) {
+				m.state = "editingItem"
 			} else if key.Matches(msg, m.keys.Delete) {
 				m.state = "removingItem"
 			} else if key.Matches(msg, m.keys.Escape) {
@@ -167,6 +173,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.addTi.Focus()
 				}
 			}
+		case "editingProject":
+			if key.Matches(msg, m.keys.Enter) {
+				if strings.Trim(m.addTi.Value(), " ") != "" {
+					m.entries[m.table.Cursor()].name = m.addTi.Value()
+					m.table.SetRows(m.getRowsFromEntries())
+				}
+
+				m.state = "overview"
+				m.table.Focus()
+			} else if key.Matches(msg, m.keys.Escape) {
+				m.state = "overview"
+				m.table.Focus()
+			}
+
+		case "editingItem":
+
 		case "removingProject":
 			if key.Matches(msg, m.keys.Confirm) {
 				c := m.table.Cursor()
@@ -212,7 +234,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case m.state == "detailed":
 		m.entries[m.table.Cursor()].activeItems = &m.entries[m.table.Cursor()].itemLists[m.listIndex]
 		(*m.entries[m.table.Cursor()].activeItems)[m.itemIndex].isActive = true
-	case m.state == "addingProject":
+	case m.state == "addingProject" || m.state == "editingProject":
 		m.addTi, cmd = m.addTi.Update(msg)
 	case m.state == "addingItem":
 		m.addTi, cmd = m.addTi.Update(msg)

@@ -140,7 +140,7 @@ func (m model) View() string {
 	switch m.state {
 	case "overview":
 		s = m.table.View()
-	case "addingProject":
+	case "addingProject", "editingProject":
 		s = m.addTi.View() + "\n\n" + m.table.View()
 	case "detailed":
 		s = renderDetailed(m)

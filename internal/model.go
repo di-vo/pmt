@@ -18,6 +18,7 @@ type keyMap struct {
 	Quit      key.Binding
 	Add       key.Binding
 	Delete    key.Binding
+	Edit      key.Binding
 	Escape    key.Binding
 	Enter     key.Binding
 	Right     key.Binding
@@ -66,6 +67,10 @@ var keys = keyMap{
 	Delete: key.NewBinding(
 		key.WithKeys("x"),
 		key.WithHelp("x", "delete"),
+	),
+	Edit: key.NewBinding(
+		key.WithKeys("e"),
+		key.WithHelp("e", "edit"),
 	),
 	Escape: key.NewBinding(
 		key.WithKeys("esc"),
