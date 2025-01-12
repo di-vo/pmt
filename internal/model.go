@@ -12,19 +12,23 @@ import (
 )
 
 type keyMap struct {
-	Up      key.Binding
-	Down    key.Binding
-	Help    key.Binding
-	Quit    key.Binding
-	Add     key.Binding
-	Delete  key.Binding
-	Escape  key.Binding
-	Enter   key.Binding
-	Right   key.Binding
-	Left    key.Binding
-	Confirm key.Binding
-	Cancel  key.Binding
-	Tab     key.Binding
+	Up        key.Binding
+	Down      key.Binding
+	Help      key.Binding
+	Quit      key.Binding
+	Add       key.Binding
+	Delete    key.Binding
+	Escape    key.Binding
+	Enter     key.Binding
+	Right     key.Binding
+	Left      key.Binding
+	Confirm   key.Binding
+	Cancel    key.Binding
+	Tab       key.Binding
+	MoveUp    key.Binding
+	MoveDown  key.Binding
+	MoveLeft  key.Binding
+	MoveRight key.Binding
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
@@ -91,6 +95,22 @@ var keys = keyMap{
 		key.WithKeys("tab"),
 		key.WithHelp("tab", "tab"),
 	),
+	MoveUp: key.NewBinding(
+		key.WithKeys("ctrl+up", "ctrl+k"),
+		key.WithHelp("ctrl+k", "move item up"),
+	),
+	MoveDown: key.NewBinding(
+		key.WithKeys("ctrl+down", "ctrl+j"),
+		key.WithHelp("ctrl+j", "move item down"),
+	),
+	MoveLeft: key.NewBinding(
+		key.WithKeys("ctrl+left", "ctrl+h"),
+		key.WithHelp("ctrl+h", "move item left"),
+	),
+	MoveRight: key.NewBinding(
+		key.WithKeys("ctrl+right", "ctrl+l"),
+		key.WithHelp("ctrl+l", "move item right"),
+	),
 }
 
 type item struct {
@@ -129,6 +149,10 @@ func (m model) getRowsFromEntries() []table.Row {
 	}
 
 	return rows
+}
+
+func (m model) getActiveItem() item {
+	return (*m.entries[m.table.Cursor()].activeItems)[m.itemIndex]
 }
 
 func InitalModel() model {

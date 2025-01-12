@@ -85,6 +85,55 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 				m.itemIndex = 0
+			} else if key.Matches(msg, m.keys.MoveUp) {
+				if m.itemIndex > 0 {
+					tmp := (*m.entries[m.table.Cursor()].activeItems)[m.itemIndex]
+					(*m.entries[m.table.Cursor()].activeItems)[m.itemIndex] = (*m.entries[m.table.Cursor()].activeItems)[m.itemIndex-1]
+					(*m.entries[m.table.Cursor()].activeItems)[m.itemIndex-1] = tmp
+
+					m.itemIndex--
+				}
+			} else if key.Matches(msg, m.keys.MoveDown) {
+				if m.itemIndex < len(*m.entries[m.table.Cursor()].activeItems)-1 {
+					tmp := (*m.entries[m.table.Cursor()].activeItems)[m.itemIndex]
+					(*m.entries[m.table.Cursor()].activeItems)[m.itemIndex] = (*m.entries[m.table.Cursor()].activeItems)[m.itemIndex+1]
+					(*m.entries[m.table.Cursor()].activeItems)[m.itemIndex+1] = tmp
+
+					m.itemIndex++
+				}
+			} else if key.Matches(msg, m.keys.MoveLeft) {
+				if m.listIndex > 0 {
+					c := m.table.Cursor()
+
+					activeItem := m.getActiveItem()
+
+					newItems := make([]item, 0)
+					newItems = append(newItems, (*m.entries[c].activeItems)[:m.itemIndex]...)
+					newItems = append(newItems, (*m.entries[c].activeItems)[m.itemIndex+1:]...)
+					*m.entries[c].activeItems = newItems
+
+					m.listIndex--
+					m.entries[c].itemLists[m.listIndex] = append(m.entries[c].itemLists[m.listIndex], activeItem)
+
+					m.itemIndex = len(m.entries[c].itemLists[m.listIndex]) - 1
+				}
+			} else if key.Matches(msg, m.keys.MoveRight) {
+				if m.listIndex < len(m.entries[m.table.Cursor()].itemLists)-1 {
+					c := m.table.Cursor()
+
+					activeItem := m.getActiveItem()
+
+					newItems := make([]item, 0)
+					newItems = append(newItems, (*m.entries[c].activeItems)[:m.itemIndex]...)
+					newItems = append(newItems, (*m.entries[c].activeItems)[m.itemIndex+1:]...)
+					*m.entries[c].activeItems = newItems
+
+					m.listIndex++
+					m.entries[c].itemLists[m.listIndex] = append(m.entries[c].itemLists[m.listIndex], activeItem)
+
+					m.itemIndex = len(m.entries[c].itemLists[m.listIndex]) - 1
+
+				}
 			}
 		case "addingProject":
 			if key.Matches(msg, m.keys.Enter) {
