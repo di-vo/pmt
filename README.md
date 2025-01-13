@@ -52,3 +52,5 @@ Run the binary:
 ```bash
 ./pmt
 ```
+## License
+[MIT License](LICENSE)
