@@ -11,7 +11,7 @@ Uses the [Bubbletea](https://github.com/charmbracelet/bubbletea) framework.
 Clone the repository:
 
 ```bash
-    git clone https://github.com/di-vo/pmt && cd pmt
+git clone https://github.com/di-vo/pmt && cd pmt
 ```
 
 Build the docker image:
