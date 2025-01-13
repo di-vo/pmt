@@ -71,11 +71,29 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else if key.Matches(msg, m.keys.Delete) {
 				m.state = "removingItem"
 			} else if key.Matches(msg, m.keys.Escape) {
+				// update items in db
+				activeProj := m.entries[m.table.Cursor()]
+
+				for i, v := range activeProj.itemLists {
+					for j, w := range v {
+						updateItem(m.database, w, i, j)
+					}
+				}
+
 				m.state = "overview"
 				m.table.Focus()
 			} else if key.Matches(msg, m.keys.Help) {
 				m.help.ShowAll = !m.help.ShowAll
 			} else if key.Matches(msg, m.keys.Quit) {
+				// update items in db
+				activeProj := m.entries[m.table.Cursor()]
+
+				for i, v := range activeProj.itemLists {
+					for j, w := range v {
+						updateItem(m.database, w, i, j)
+					}
+				}
+
 				return m, tea.Quit
 			} else if key.Matches(msg, m.keys.Right) {
 				m.toggleActiveItemState(false)
@@ -157,6 +175,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					var p project
 					p.name = m.textInput.Value()
 					p.itemLists = make([][]item, 3)
+
+					// insert into db
+					p.id = insertProject(m.database, p)
+
 					m.entries = append(m.entries, p)
 					m.table.SetRows(m.getRowsFromEntries())
 					m.table.GotoBottom()
@@ -168,6 +190,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "addingItem":
 			if key.Matches(msg, m.keys.Enter) && m.textInput.Focused() {
 				newItem := item{title: m.textInput.Value(), desc: m.textArea.Value()}
+
+				// insert into db
+				newItem.id = insertItem(m.database, newItem, m.listIndex, m.itemIndex, m.entries[m.table.Cursor()].id)
+
 				*m.entries[m.table.Cursor()].activeItems = append(*m.entries[m.table.Cursor()].activeItems, newItem)
 
 				m.state = "detailed"
@@ -187,6 +213,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if strings.Trim(m.textInput.Value(), " ") != "" {
 					m.entries[m.table.Cursor()].name = m.textInput.Value()
 					m.table.SetRows(m.getRowsFromEntries())
+
+					// update in db
+					updateProject(m.database, m.entries[m.table.Cursor()])
 				}
 
 				m.state = "overview"
@@ -222,6 +251,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				c := m.table.Cursor()
 
 				if len(m.entries) > 0 {
+					// delete from db
+					deleteProject(m.database, m.entries[c])
+
 					newEntries := make([]project, 0)
 					newEntries = append(newEntries, m.entries[:c]...)
 					newEntries = append(newEntries, m.entries[c+1:]...)
@@ -240,6 +272,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				c := m.table.Cursor()
 
 				if len(*m.entries[c].activeItems) > 0 {
+					// delete from db
+					deleteItem(m.database, (*m.entries[c].activeItems)[m.itemIndex])
+
 					newItems := make([]item, 0)
 					newItems = append(newItems, (*m.entries[c].activeItems)[:m.itemIndex]...)
 					newItems = append(newItems, (*m.entries[c].activeItems)[m.itemIndex+1:]...)

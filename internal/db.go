@@ -140,3 +140,194 @@ func getProjects(database *sql.DB) []project {
 
 	return projects
 }
+
+func insertProject(database *sql.DB, p project) int {
+	ctx, err := database.Begin()
+	if err != nil {
+		fmt.Printf("Error opening db connection: %v", err)
+		os.Exit(1)
+	}
+
+	stmt, err := ctx.Prepare("INSERT INTO project (name) VALUES (?)")
+	if err != nil {
+		fmt.Printf("Error preparing statement: %v", err)
+		os.Exit(1)
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(p.name)
+	if err != nil {
+		fmt.Printf("Error executing statement: %v", err)
+		os.Exit(1)
+	}
+
+	err = ctx.Commit()
+	if err != nil {
+		fmt.Printf("Error commiting change: %v", err)
+		os.Exit(1)
+	}
+
+	newId, err := res.LastInsertId()
+	if err != nil {
+		fmt.Printf("Error retrieving id: %v", err)
+		os.Exit(1)
+	}
+
+	return int(newId)
+}
+
+func insertItem(database *sql.DB, it item, lid int, orderNr int, pid int) int {
+	ctx, err := database.Begin()
+	if err != nil {
+		fmt.Printf("Error opening db connection: %v", err)
+		os.Exit(1)
+	}
+
+	stmt, err := ctx.Prepare("INSERT INTO item (title, desc, lid, orderNr, pid) VALUES (?, ?, ?, ?, ?)")
+	if err != nil {
+		fmt.Printf("Error preparing statement: %v", err)
+		os.Exit(1)
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(it.title, it.desc, lid, orderNr, pid)
+	if err != nil {
+		fmt.Printf("Error executing statement: %v", err)
+		os.Exit(1)
+	}
+
+	err = ctx.Commit()
+	if err != nil {
+		fmt.Printf("Error commiting change: %v", err)
+		os.Exit(1)
+	}
+
+	newId, err := res.LastInsertId()
+	if err != nil {
+		fmt.Printf("Error retrieving id: %v", err)
+		os.Exit(1)
+	}
+
+	return int(newId)
+}
+
+func deleteProject(database *sql.DB, p project) {
+	ctx, err := database.Begin()
+	if err != nil {
+		fmt.Printf("Error opening db connection: %v", err)
+		os.Exit(1)
+	}
+
+	stmt, err := ctx.Prepare("DELETE FROM item WHERE pid = ?")
+	if err != nil {
+		fmt.Printf("Error preparing statement: %v", err)
+		os.Exit(1)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(p.id)
+	if err != nil {
+		fmt.Printf("Error executing statement: %v", err)
+		os.Exit(1)
+	}
+
+	stmt, err = ctx.Prepare("DELETE FROM project WHERE id = ?")
+	if err != nil {
+		fmt.Printf("Error preparing statement: %v", err)
+		os.Exit(1)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(p.id)
+	if err != nil {
+		fmt.Printf("Error executing statement: %v", err)
+		os.Exit(1)
+	}
+
+	err = ctx.Commit()
+	if err != nil {
+		fmt.Printf("Error commiting change: %v", err)
+		os.Exit(1)
+	}
+}
+
+func deleteItem(database *sql.DB, it item) {
+	ctx, err := database.Begin()
+	if err != nil {
+		fmt.Printf("Error opening db connection: %v", err)
+		os.Exit(1)
+	}
+
+	stmt, err := ctx.Prepare("DELETE FROM item WHERE id = ?")
+	if err != nil {
+		fmt.Printf("Error preparing statement: %v", err)
+		os.Exit(1)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(it.id)
+	if err != nil {
+		fmt.Printf("Error executing statement: %v", err)
+		os.Exit(1)
+	}
+
+	err = ctx.Commit()
+	if err != nil {
+		fmt.Printf("Error commiting change: %v", err)
+		os.Exit(1)
+	}
+}
+
+func updateProject(database *sql.DB, p project) {
+	ctx, err := database.Begin()
+	if err != nil {
+		fmt.Printf("Error opening db connection: %v", err)
+		os.Exit(1)
+	}
+
+	stmt, err := ctx.Prepare("UPDATE project SET name = ? WHERE id = ?")
+	if err != nil {
+		fmt.Printf("Error preparing statement: %v", err)
+		os.Exit(1)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(p.name, p.id)
+	if err != nil {
+		fmt.Printf("Error executing statement: %v", err)
+		os.Exit(1)
+	}
+
+	err = ctx.Commit()
+	if err != nil {
+		fmt.Printf("Error commiting change: %v", err)
+		os.Exit(1)
+	}
+}
+
+func updateItem(database *sql.DB, it item, lid int, orderNr int) {
+	ctx, err := database.Begin()
+	if err != nil {
+		fmt.Printf("Error opening db connection: %v", err)
+		os.Exit(1)
+	}
+
+	stmt, err := ctx.Prepare("UPDATE item SET title = ?, desc = ?, lid = ?, orderNr = ? WHERE id = ?")
+	if err != nil {
+		fmt.Printf("Error preparing statement: %v", err)
+		os.Exit(1)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(it.title, it.desc, lid, orderNr, it.id)
+	if err != nil {
+		fmt.Printf("Error executing statement: %v", err)
+		os.Exit(1)
+	}
+
+	err = ctx.Commit()
+	if err != nil {
+		fmt.Printf("Error commiting change: %v", err)
+		os.Exit(1)
+	}
+}
