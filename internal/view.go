@@ -11,25 +11,26 @@ var (
 			Padding(1, 2)
 
 	listStyle = lip.NewStyle().
-			Border(lip.RoundedBorder()).
+			BorderStyle(lip.RoundedBorder()).
 			Padding(1, 2, 0).
 			Margin(0, 1)
 
 	activeListStyle = lip.NewStyle().
-			Border(lip.RoundedBorder()).
-			BorderForeground(lip.Color("#458588")).
+			BorderStyle(lip.DoubleBorder()).
+			BorderForeground(lip.Color("#884845")).
 			Padding(1, 2, 0).
 			Margin(0, 1)
 
 	listTitleStyle = lip.NewStyle().
 			Foreground(lip.Color("#FFFDF5")).
-			Background(lip.Color("#25A065")).
+			Background(lip.Color("#458588")).
 			Padding(0, 2)
 
 	activeListTitleStyle = lip.NewStyle().
 				Foreground(lip.Color("#FFFDF5")).
-				Background(lip.Color("#458588")).
-				Padding(0, 2)
+				Background(lip.Color("#458848")).
+				Padding(0, 2).
+				Bold(true)
 
 	itemStyle = lip.NewStyle().
 			BorderStyle(lip.RoundedBorder()).
@@ -37,8 +38,8 @@ var (
 			Padding(0, 1, 1)
 
 	activeItemStyle = lip.NewStyle().
-			BorderStyle(lip.RoundedBorder()).
-			BorderForeground(lip.Color("#F186C7")).
+			BorderStyle(lip.DoubleBorder()).
+			BorderForeground(lip.Color("#858845")).
 			MarginBottom(1).
 			Padding(0, 1, 1)
 

@@ -2,7 +2,7 @@
 
 A simple and lightweight project management app inside your terminal.
 
-Uses the [Bubbletea](https://github.com/charmbracelet/bubbletea) framework.
+Built with the [Bubbletea](https://github.com/charmbracelet/bubbletea) framework.
 
 ## Installation
 
@@ -23,7 +23,7 @@ docker build -t pmt .
 Run a container:
 
 ```bash
-docker run -it -e "TERM=xterm-256color" pmt-test
+docker run -it -e "TERM=xterm-256color" pmt
 ```
 
 If you want to run a stopped container, you need to do:
